@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from slipstream.engine.orders import Order
+from slipstream.engine.orders import Order, OrderType
 from slipstream.engine.state import MarketState
 from slipstream.fills.base import FillModel
 from slipstream.fills.outcome import FillOutcome
@@ -30,6 +30,8 @@ class QueuePositionFillModel(FillModel):
         return self.resting[order_id]["queue_ahead"]
 
     def on_order_arrival(self, order: Order, market: MarketState) -> list[FillOutcome]:
+        if order.order_type is OrderType.MARKET:
+            return [self.aggressive_touch_fill(order, market)]
         if order.limit_price is None:
             raise ValueError("QueuePositionFillModel requires a limit price")
         side = order.side
@@ -38,7 +40,7 @@ class QueuePositionFillModel(FillModel):
             side < 0 and limit <= market.bid + PRICE_EPS
         )
         if marketable:
-            return [self._aggressive_fill(order, market)]
+            return [self.aggressive_touch_fill(order, market)]
         same_touch = market.near_touch(side)
         at_touch = abs(limit - same_touch) < PRICE_EPS
         inside_spread = limit > same_touch if side > 0 else limit < same_touch
@@ -54,34 +56,6 @@ class QueuePositionFillModel(FillModel):
             "queue_ahead": queue_ahead,
         }
         return []
-
-    def _aggressive_fill(self, order: Order, market: MarketState) -> FillOutcome:
-        side = order.side
-        qty = order.remaining()
-        touch = market.far_touch(side)
-        scale = self.spec.multiplier * qty
-        arrival_mid = market.mid()
-        order.register_fill(qty)
-        return FillOutcome(
-            order_id=order.order_id,
-            symbol=order.symbol,
-            side=side,
-            requested_qty=order.qty,
-            filled_qty=qty,
-            filled=True,
-            passive=False,
-            signal_ts=order.signal_ts,
-            arrival_ts=market.ts,
-            fill_ts=market.ts,
-            intended_price=order.signal_mid,
-            fill_price=touch,
-            slippage={
-                "latency_drift": side * (arrival_mid - order.signal_mid) * scale,
-                "spread": side * (touch - arrival_mid) * scale,
-                "book_walk": 0.0,
-                "impact": 0.0,
-            },
-        )
 
     def on_quote(self, market: MarketState) -> list[FillOutcome]:
         for entry in self.resting.values():

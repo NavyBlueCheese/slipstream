@@ -45,6 +45,34 @@ class FillModel(ABC):
     def open_order_ids(self) -> list[int]:
         return []
 
+    def aggressive_touch_fill(self, order: Order, market: MarketState) -> FillOutcome:
+        side = order.side
+        qty = order.remaining()
+        touch = market.far_touch(side)
+        scale = self.spec.multiplier * qty
+        arrival_mid = market.mid()
+        order.register_fill(qty)
+        return FillOutcome(
+            order_id=order.order_id,
+            symbol=order.symbol,
+            side=side,
+            requested_qty=order.qty,
+            filled_qty=qty,
+            filled=True,
+            passive=False,
+            signal_ts=order.signal_ts,
+            arrival_ts=market.ts,
+            fill_ts=market.ts,
+            intended_price=order.signal_mid,
+            fill_price=touch,
+            slippage={
+                "latency_drift": side * (arrival_mid - order.signal_mid) * scale,
+                "spread": side * (touch - arrival_mid) * scale,
+                "book_walk": 0.0,
+                "impact": 0.0,
+            },
+        )
+
     def make_context(self, order: Order, market: MarketState) -> TradeContext:
         return TradeContext(
             spec=self.spec,
