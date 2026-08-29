@@ -1,0 +1,12 @@
+{
+  "commissions": 54.51,
+  "contracts_traded": 23.0,
+  "fills": 12.0,
+  "financing": 3.875,
+  "margin_calls": 0.0,
+  "max_drawdown": -3165.921436,
+  "net_pnl": 2941.545744,
+  "roll_costs": 0.0,
+  "sharpe": 17.268975,
+  "turnover_per_day": 10.9307
+}

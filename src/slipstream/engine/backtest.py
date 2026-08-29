@@ -437,6 +437,7 @@ class _Engine:
                     self.account.apply_roll(ts, roll.gap, cost)
         self._call_strategy("on_end")
         if self.market is not None:
+            self._drain_pending(self.market.ts.value)
             self._mark(self.market.ts, self.market.mid())
         equity = pd.Series(
             self.equity_values, index=pd.DatetimeIndex(self.equity_ts, name="ts")

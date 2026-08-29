@@ -30,7 +30,7 @@ class SyntheticMarketConfig:
     cluster_persistence: float = 0.97
     cluster_vol: float = 0.35
     trade_size_mean: float = 3.0
-    mean_reversion: float = 0.02
+    mean_reversion: float = 0.0
 
 
 def _u_shape(frac: np.ndarray, strength: float) -> np.ndarray:

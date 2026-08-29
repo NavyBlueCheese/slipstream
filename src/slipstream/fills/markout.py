@@ -46,4 +46,5 @@ def adverse_selection_report(outcomes: list[FillOutcome]) -> pd.DataFrame:
     grouped["fills"] = frame.groupby("passive")["qty"].count()
     grouped["total_qty"] = frame.groupby("passive")["qty"].sum()
     grouped.index = grouped.index.map({True: "passive", False: "aggressive"})
+    grouped.index.name = "fill_style"
     return grouped
