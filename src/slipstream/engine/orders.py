@@ -52,3 +52,12 @@ class Order:
             self.state = OrderState.FILLED
         else:
             self.state = OrderState.PARTIALLY_FILLED
+
+    def unregister_fill(self, qty: float) -> None:
+        self.filled_qty = max(self.filled_qty - qty, 0.0)
+        if self.filled_qty > 0.0:
+            self.state = OrderState.PARTIALLY_FILLED
+        elif self.ack_ts is not None:
+            self.state = OrderState.ACKNOWLEDGED
+        else:
+            self.state = OrderState.NEW

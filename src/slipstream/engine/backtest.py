@@ -110,6 +110,16 @@ class BacktestResult:
     def fill_count(self) -> int:
         return sum(1 for outcome in self.outcomes if outcome.filled)
 
+    def standard_report(
+        self,
+        output_dir: object = None,
+        quotes: object = None,
+        name: str = "backtest",
+    ) -> dict:
+        from slipstream.diagnostics.report import standard_report
+
+        return standard_report(self, output_dir=output_dir, quotes=quotes, name=name)
+
     def summary(self) -> dict[str, float]:
         return {
             "net_pnl": self.net_pnl(),
