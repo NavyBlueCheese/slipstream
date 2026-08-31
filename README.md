@@ -1,1 +1,2 @@
 Slipstream is a futures backtesting research library built on the premise that execution modeling decides whether a strategy survives contact with a live market.
+Work in progress
